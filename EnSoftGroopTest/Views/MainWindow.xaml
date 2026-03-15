@@ -35,7 +35,8 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock Text="Фильтр:" VerticalAlignment="Center" Margin="0,0,5,0"/>
             <ComboBox Width="120" Height="30" Margin="0,0,10,0" 
-                      SelectedItem="{Binding SelectedFilter}">
+              SelectedValuePath="Content"
+              SelectedValue="{Binding SelectedFilter}">
                 <ComboBoxItem Content="Все" IsSelected="True"/>
                 <ComboBoxItem Content="Активные"/>
                 <ComboBoxItem Content="Завершённые"/>
@@ -43,14 +44,15 @@
 
             <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="0,0,5,0"/>
             <TextBox Width="200" Height="30" 
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     VerticalContentAlignment="Center"/>
+             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+             VerticalContentAlignment="Center"/>
         </StackPanel>
 
         <!-- Список задач -->
         <ListView Grid.Row="2" 
                   ItemsSource="{Binding TasksView}"
-                  SelectedItem="{Binding SelectedTask}">
+                  SelectedItem="{Binding SelectedTask}" 
+                  GridViewColumnHeader.Click ="GridViewColumnHeaderClickedHandler">
 
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -76,9 +78,9 @@
             </ListView.ItemContainerStyle>
 
             <ListView.View>
-                <GridView>
+                <GridView AllowsColumnReorder="True">
                     <GridViewColumn Header="✓" Width="30">
-                        <GridViewColumn.CellTemplate>
+                        <GridViewColumn.CellTemplate >
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding Status, Converter={StaticResource StatusToBooleanConverter}}"/>
                             </DataTemplate>

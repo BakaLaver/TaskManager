@@ -11,13 +11,15 @@ using System.Windows.Input;
 
 namespace EnSoftGroopTest.ViewModels
 {
-    public class TaskEditViewModel : INotifyPropertyChanged, IDataErrorInfo
+    public class TaskEditViewModel : INotifyPropertyChanged
     {
         private readonly TaskItem _task;
         private readonly bool _isNewTask;
         private RelayCommand _saveCommand;
 
         public TaskItem Task => _task;
+
+        public bool IsNewTask => _isNewTask;
 
         public ICommand SaveCommand => _saveCommand;
         public ICommand CancelCommand { get; }
@@ -76,35 +78,6 @@ namespace EnSoftGroopTest.ViewModels
                 .FirstOrDefault(w => w.IsActive);
 
             window?.Close();
-        }
-
-        // IDataErrorInfo для валидации
-        public string Error => null;
-
-        public string this[string columnName]
-        {
-            get
-            {
-                string error = null;
-
-                switch (columnName)
-                {
-                    case nameof(Task.Title):
-                        if (string.IsNullOrWhiteSpace(_task.Title))
-                            error = "Название задачи обязательно";
-                        break;
-
-                    case nameof(Task.DueDate):
-                        if (_task.DueDate.HasValue && _isNewTask && _task.DueDate.Value.Date < DateTime.Now.Date)
-                            error = "Дата не может быть в прошлом";
-                        break;
-                }
-
-                // При изменении валидации обновляем команду
-                _saveCommand?.RaiseCanExecuteChanged();
-
-                return error;
-            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

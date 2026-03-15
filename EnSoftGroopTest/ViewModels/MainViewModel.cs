@@ -92,6 +92,7 @@ namespace EnSoftGroopTest.ViewModels
             DeleteTaskCommand = new RelayCommand(ExecuteDeleteTask, CanExecuteEditDelete);
             ToggleStatusCommand = new RelayCommand(ExecuteToggleStatus);
 
+            _selectedFilter = "Все";
             // Загрузка данных
             LoadTasksAsync();
 
@@ -122,22 +123,37 @@ namespace EnSoftGroopTest.ViewModels
         {
             if (obj is TaskItem task)
             {
+                // Диагностика - посмотрим, что приходит
+                System.Diagnostics.Debug.WriteLine($"Filter: Task Status={task.Status}, SelectedFilter={SelectedFilter}");
+
                 // Фильтр по статусу
                 if (SelectedFilter != "Все")
                 {
-                    if (SelectedFilter == "Активные" && task.Status != TaskStatus.Active)
+                    // Получаем статус задачи в виде строки для сравнения
+                    string taskStatusString = task.Status == TaskStatus.Active ? "Активные" : "Завершённые";
+
+                    // Если статус задачи не соответствует выбранному фильтру - скрываем
+                    if (taskStatusString != SelectedFilter)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  -> Filtered out: {task.Title}");
                         return false;
-                    if (SelectedFilter == "Завершённые" && task.Status != TaskStatus.Completed)
-                        return false;
+                    }
                 }
 
                 // Поиск по названию и описанию
                 if (!string.IsNullOrWhiteSpace(SearchText))
                 {
-                    return task.Title?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
-                           task.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true;
+                    bool matchesSearch = (task.Title?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
+                                         task.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
+
+                    if (!matchesSearch)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  -> Search filtered out: {task.Title}");
+                        return false;
+                    }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"  -> Passed: {task.Title}");
                 return true;
             }
             return false;
@@ -147,7 +163,10 @@ namespace EnSoftGroopTest.ViewModels
 
         private void ExecuteAddTask(object parameter)
         {
-            var newTask = new TaskItem();
+            var newTask = new TaskItem()
+            {
+                Status = TaskStatus.Active
+            };
             var editVm = new TaskEditViewModel(newTask, isNewTask: true);
             var editWindow = new TaskEditWindow { DataContext = editVm };
 
@@ -180,6 +199,7 @@ namespace EnSoftGroopTest.ViewModels
                 SelectedTask.Title = taskCopy.Title;
                 SelectedTask.Description = taskCopy.Description;
                 SelectedTask.Priority = taskCopy.Priority;
+                SelectedTask.Status = taskCopy.Status;
                 SelectedTask.DueDate = taskCopy.DueDate;
 
                 SaveTasksAsync();
